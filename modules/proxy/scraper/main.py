@@ -9,7 +9,7 @@ http_sources = config["http"]["sources"]
 socks4_sources = config["socks4"]["sources"]
 socks5_sources = config["socks5"]["sources"]
 
-def get_proxies(type:Literal["socks4", "socks5", "http", "all"]="all"):
+def scrape_proxies(type:Literal["socks4", "socks5", "http", "all"]="all"):
     http_proxies, socks4_proxies, socks5_proxies = [], [], []
     for source in http_sources:
         try:
