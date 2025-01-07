@@ -1,4 +1,4 @@
-TODOLIST:
+# TODOLIST:
 
 - [x] set up project structure
 - [x] write proxy rotation implementation
@@ -22,7 +22,7 @@ TODOLIST:
 - [ ] write bing implementation
 - [ ] write duckduckgo implementation
 
-FUTURE TODOLIST:
+# FUTURE TODOLIST:
 
-- [ ] add scrape proxies and check proxies to ProxyPool to get newest proxies
+- [x] add scrape proxies and check proxies to ProxyPool to get newest proxies
 - [ ] make proxy checker faster
