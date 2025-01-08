@@ -15,11 +15,7 @@
     - num:int = 10 -> Number of results to return
     - start:int = 0 -> The index of result to start with
     - end:int = 10 -> The index of result to stop with
-- [ ] write google implementation
-  - forced to use googlesearch
-  - find ways to do google dorking with googlesearch
-- [ ] write bing implementation
-- [ ] write duckduckgo implementation
+- [x] write etools scraping implementaiton
 
 # FUTURE TODOLIST:
 
