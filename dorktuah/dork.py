@@ -1,10 +1,6 @@
-from modules.engines import Google
-# from . import Bing
-# from . import DuckDuckGo
+from .modules.engine import Engine
 
-def dork(query, use_proxy, use_custom):
-    google = Google(use_proxy=use_proxy, use_custom=use_custom)
-    # bing = Bing()
-    results = []
-    results.append(google.search(query))
-    # results.append(bing.search(query))
+def dork(query, use_proxy:bool=True, use_custom:bool=True):
+    google = Engine(use_proxy=use_proxy, use_custom=use_custom)
+    results = google.search(query)
+    return results
