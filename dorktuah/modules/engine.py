@@ -22,9 +22,11 @@ class Engine:
         with SB(uc=True, headless2=True) as sb:
             sb.open("https://www.etools.ch/search.do")
             sb.type("input[type='search']", query)
-            sb.type("input[type='submit']", query)
-            if sb.is_element_visible("a.cmpboxbtn.cmpboxbtnyes.cmptxt_btn_yes"):
-                sb.click("a.cmpboxbtn.cmpboxbtnyes.cmptxt_btn_yes")
+            sb.click("input[type='submit']")
+            sb.sleep(1)
+            sb.execute_script("document.querySelector('.cmpwrapper').shadowRoot.getElementById('cmpbntyestxt').click()") 
+            sb.sleep(1)
+            sb.click("input[type='submit']")
             source = sb.get_page_source()
             
         soup = BeautifulSoup(source, 'html.parser')

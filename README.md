@@ -11,11 +11,9 @@
 - [x] write engine implementation
   - use BeautifulSoup
   - Engine()
-    - site:str = "https://google.com"
-    - num:int = 10 -> Number of results to return
-    - start:int = 0 -> The index of result to start with
-    - end:int = 10 -> The index of result to stop with
+    - proxy_pool implementation
 - [x] write etools scraping implementaiton
+- [ ] implement proxy pool in engine.py
 
 # FUTURE TODOLIST:
 
