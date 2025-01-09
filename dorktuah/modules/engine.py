@@ -3,6 +3,7 @@ from seleniumbase import SB
 from selenium.common.exceptions import JavascriptException
 from bs4 import BeautifulSoup
 from .proxy import ProxyPool
+from urllib.parse import unquote
 
 class Engine:
     def __init__(
@@ -48,8 +49,10 @@ class Engine:
                 title = record.find('a', {'class': 'title'})
                 description = record.find('div', {'class': 'text'})
                 if title and description:
+                    url = title.get("href")
+                    url = unquote(url.replace("redirect.do?a=","")) if url.startswith("redirect.do?a=") else url
                     result = {
-                        "url": title.get("href"),
+                        "url": url,
                         "title": title.text,
                         "description": description.text
                     }
