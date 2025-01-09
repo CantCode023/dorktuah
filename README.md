@@ -150,12 +150,27 @@ Remember to use this tool responsibly and in accordance with the target website'
     - type:Literal["socks4", "socks5", "http", "all"] = "all"
     - get proxies from proxies.txt
   - [x] write a proxy checker to make sure the returned proxy is alive
+  - [ ] convert proxypool to class to allow argument inheritance for easier argument initalization across methods
 - [x] write engine implementation
   - use BeautifulSoup
   - Engine()
     - proxy_pool implementation
 - [x] write etools scraping implementaiton
+  - [ ] do pagination to retrieve **every** results
 - [x] implement proxy pool in engine.py
+- [x] make it into a cli using colorama and rich _maybe_?
+  - [x] make header "dorktuah"
+  - [x] make subheader "Dork across search engines."
+  - [x] put credentials (author, github, discord)
+  - ~~make textbox to ask for query using rich _maybe_~~
+- [x] add config in cli (write config.json file)
+  - [x] add proxy support
+    - [x] enable proxy (y/n)
+    - [x] use custom proxy (y/n)
+    - [x] proxy type (socks4/socks5/http/all)
+    - [x] proxy path
+      - [x] add path checking to check if it exists
+    - [x] source_limit (1-100)
 
 ---
 
