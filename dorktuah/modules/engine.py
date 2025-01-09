@@ -28,7 +28,7 @@ class Engine:
             proxy = ProxyPool(type=self.proxy_type, use_custom=self.use_custom, proxy_path=self.proxy_path, source_limit=self.source_limit)
 
         try:
-            with SB(uc=True, headless2=False, proxy=proxy) as sb:
+            with SB(uc=True, headless2=True, proxy=proxy) as sb:
                 sb.open("https://www.etools.ch/search.do")
                 sb.type("input[type='search']", query)
                 sb.click("input[type='submit']")
