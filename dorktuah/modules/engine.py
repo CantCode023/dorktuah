@@ -1,6 +1,8 @@
 from typing import Literal, Optional
 from seleniumbase import SB
+from selenium.common.exceptions import JavascriptException
 from bs4 import BeautifulSoup
+from .proxy import ProxyPool
 
 class Engine:
     def __init__(
@@ -8,26 +10,35 @@ class Engine:
         proxy_type:Literal["socks4", "socks5", "http", "all"] = "all",
         use_proxy:bool=True,
         use_custom:bool=True,
-        proxy_path:str=""
+        source_limit:int=10,
+        proxy_path:str="C:/Users/cantc/Desktop/Coding/Python/dorktuah/dorktuah/modules/proxy/proxies.txt"
     ):
         self.proxy_type = proxy_type
         self.use_proxy = use_proxy
         self.use_custom = use_custom
+        self.source_limit = source_limit
         self.proxy_path = proxy_path
         
     def search(self, query):
         results = []
         source = ""
+        proxy = None
 
-        with SB(uc=True, headless2=True) as sb:
-            sb.open("https://www.etools.ch/search.do")
-            sb.type("input[type='search']", query)
-            sb.click("input[type='submit']")
-            sb.sleep(1)
-            sb.execute_script("document.querySelector('.cmpwrapper').shadowRoot.getElementById('cmpbntyestxt').click()") 
-            sb.sleep(1)
-            sb.click("input[type='submit']")
-            source = sb.get_page_source()
+        if self.use_proxy:
+            proxy = ProxyPool(type=self.proxy_type, use_custom=self.use_custom, proxy_path=self.proxy_path, source_limit=self.source_limit)
+
+        try:
+            with SB(uc=True, headless2=False, proxy=proxy) as sb:
+                sb.open("https://www.etools.ch/search.do")
+                sb.type("input[type='search']", query)
+                sb.click("input[type='submit']")
+                sb.sleep(1)
+                sb.execute_script("document.querySelector('.cmpwrapper').shadowRoot.getElementById('cmpbntyestxt').click()") 
+                sb.sleep(1)
+                sb.click("input[type='submit']")
+                source = sb.get_page_source()
+        except JavascriptException:
+            print("[!] Proxy unreliable, please ensure your proxies are working and stable.")
             
         soup = BeautifulSoup(source, 'html.parser')
         rows = soup.find_all('tr')
