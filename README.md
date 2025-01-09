@@ -1,3 +1,5 @@
+![Header](./assets/header.png)
+
 # About
 
 Dorktuah is a powerful Python library designed for advanced Google dorking and web scraping through proxy rotation. It leverages multiple search engines while maintaining anonymity through an extensive proxy system. The project aims to provide researchers, security professionals, and developers with a reliable tool for gathering information while avoiding rate limiting and IP blocks.
@@ -153,7 +155,7 @@ Remember to use this tool responsibly and in accordance with the target website'
   - Engine()
     - proxy_pool implementation
 - [x] write etools scraping implementaiton
-- [ ] implement proxy pool in engine.py
+- [x] implement proxy pool in engine.py
 
 ---
 
