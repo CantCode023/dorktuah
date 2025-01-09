@@ -31,7 +31,7 @@ def show_menu(options:str="\n[0] Query\n[1] Proxy Settings\n[2] Exit"):
     rprint(f"[bright_white]--------------------------------------------[/bright_white]\n")
 
 def load_config():
-    with open("config.json", "r") as f:
+    with open("./dorktuah/config.json", "r") as f:
         config = json.load(f) 
     return config
 
@@ -44,7 +44,7 @@ def show_query():
     results = dorktuah.dork(
         query=query,
         proxy_type=config["proxy_type"],
-        use_proxy=config["use_proxy"],
+        use_proxy=config["enabled"],
         use_custom=config["use_custom"],
         proxy_path=config["proxy_path"],
         source_limit=config["source_limit"]
@@ -96,7 +96,7 @@ def show_proxy():
             config["source_limit"] = source_limt
         elif option == 5:
             try:
-                with open("config.json", "w") as f:
+                with open("./dorktuah/config.json", "w") as f:
                     json.dump(config, f, indent=4)
                 rprint("[green]Config saved successfully![/green]")
             except Exception as e:
@@ -121,9 +121,9 @@ if __name__ == "__main__":
         "source_limit": 10
     }
     
-    if not os.path.exists("config.json"):
+    if not os.path.exists("./dorktuah/config.json"):
         rprint("[red]Config file not found! Creating one.[/red]")
-        with open("config.json", "w") as f:
+        with open("./dorktuah/config.json", "w") as f:
             json.dump(config, f, indent=4) 
         rprint("[green]Successfully created config file. Click enter to continue[/green]")
         input()
