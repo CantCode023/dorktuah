@@ -33,7 +33,7 @@ git clone https://github.com/CantCode023/dorktuah.git
 pip install -r dorktuah/requirements.txt
 ```
 
-2. Run CLI
+2. Run CLI and you're done!
 ```bash
 python dorktuah
 ```
@@ -50,9 +50,12 @@ cd dorktuah
 pip install -r requirements.txt
 ```
 
+> [!IMPORTANT]
+> From this point on, this documentation only shows the library version implementation. If you're looking for the CLI version, just check the installation section above.
+
 ---
 
-# Examples
+# Examples 
 
 Here are several examples demonstrating how to use Dorktuah:
 
