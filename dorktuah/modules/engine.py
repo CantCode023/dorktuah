@@ -38,7 +38,7 @@ class Engine:
                 sb.click("input[type='submit']")
                 source = sb.get_page_source()
         except JavascriptException:
-            print("[!] Proxy unreliable, please ensure your proxies are working and stable.")
+            print("[!] Proxy unreliable, please ensure your proxies are working and stable. If you think this is wrong, try again.")
             
         soup = BeautifulSoup(source, 'html.parser')
         rows = soup.find_all('tr')
