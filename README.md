@@ -13,7 +13,7 @@ Key features:
 - Rate limit avoidance through proxy rotation
 - Custom proxy list support
 
-The name "Dorktuah" combines "dork" (referring to Google dorking) with "tuah" (meaning luck/fortune in Malay), signifying a fortunate/successful dorking tool.
+The name "Dorktuah" combines "dork" (referring to Google dorking) with "tuah" (meaning luck/fortune in Malay), signifying a fortunate/successful dorking tool (also referencing to hawktuah because this project is hawktuah).
 
 ---
 
