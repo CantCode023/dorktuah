@@ -21,17 +21,31 @@ The name "Dorktuah" combines "dork" (referring to Google dorking) with "tuah" (m
 
 To install Dorktuah, follow these steps:
 
-1. Clone the repository:
+Clone the repository:
 ```bash
 git clone https://github.com/CantCode023/dorktuah.git
 ```
 
-2. Navigate to the project directory:
+## Using dorktuah as a CLI
+
+1. Install required dependencies:
+```bash
+pip install -r dorktuah/requirements.txt
+```
+
+2. Run CLI
+```bash
+python dorktuah
+```
+
+## Using dorktuah as a library
+
+1. Navigate to the project directory:
 ```bash
 cd dorktuah
 ```
 
-3. Install required dependencies:
+2. Install required dependencies:
 ```bash
 pip install -r requirements.txt
 ```

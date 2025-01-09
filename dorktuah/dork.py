@@ -1,5 +1,6 @@
 from .modules.engine import Engine
 from typing import Literal
+import json
 
 def dork(
     query, 
