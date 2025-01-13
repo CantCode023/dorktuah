@@ -1,4 +1,5 @@
-import dorktuah, os, textwrap, json, time
+import os, textwrap, json, time
+from dorktuah import Dorktuah
 from seleniumbase import colorama
 from rich.prompt import Prompt, IntPrompt, Confirm
 from rich import print as rprint
@@ -27,7 +28,8 @@ def show_menu(options:str="\n[0] Query\n[1] Proxy Settings\n[2] Exit"):
     rprint("[white]Author: CantCode023[/white]")
     rprint("[white]Github: github.com/CantCode023/dorktuah[/white]")
     rprint("[white]Discord: bd8344[/white]")
-    rprint(options)
+    if options != "":
+        rprint(options)
     rprint(f"[bright_white]--------------------------------------------[/bright_white]\n")
 
 def load_config():
@@ -35,21 +37,7 @@ def load_config():
         config = json.load(f) 
     return config
 
-def show_query():
-    show_menu()
-    query = Prompt.ask("[blue]Query[/blue]")
-    
-    config = load_config()
-    
-    results = dorktuah.dork(
-        query=query,
-        proxy_type=config["proxy_type"],
-        use_proxy=config["enabled"],
-        use_custom=config["use_custom"],
-        proxy_path=config["proxy_path"],
-        source_limit=config["source_limit"]
-    )
-    
+def print_results(results):
     for i, result in enumerate(results):
         title = result["title"].strip()
         description = result["description"].strip()
@@ -62,9 +50,38 @@ def show_query():
         print("\t" + Style.BRIGHT + Fore.WHITE + f"Description: {Fore.LIGHTGREEN_EX + wrapped_description}")
         print("\t" + Style.BRIGHT + Fore.WHITE + f"Link: {Fore.LIGHTBLUE_EX + url}")
         print("\n")
+
+def show_query():
+    show_menu("")
+    query = Prompt.ask("[blue]Query[/blue]", default="Type /back to go back")
+    if query == "/back":
+        return
+    
+    config = load_config()
+    
+    dorktuah = Dorktuah(
+        proxy_type=config["proxy_type"],
+        use_proxy=config["enabled"],
+        use_custom=config["use_custom"],
+        proxy_path=config["proxy_path"],
+        source_limit=config["source_limit"]
+    )
+    
+    results = dorktuah.search(query)
+    print_results(results)
         
-    print(Style.DIM + Fore.LIGHTBLUE_EX + "Press enter to continue...")
-    input()
+    while True:
+        has_next_page = dorktuah.has_next_page()
+        if has_next_page:
+            print(Style.DIM + Fore.LIGHTBLUE_EX + "Press enter to go next...")
+        print(Style.DIM + Fore.LIGHTRED_EX + "Type q and press enter to go back...")
+        inp = input()
+        if inp.lower() == "q":
+            dorktuah.close()
+            return
+        show_menu("")
+        results = dorktuah.get_next_page()
+        print_results(results)
         
 def show_proxy():
     config = load_config()
@@ -117,7 +134,7 @@ if __name__ == "__main__":
         "enabled": False,
         "use_custom": False,
         "proxy_type": "all",
-        "proxy_path": "C:/Users/cantc/Desktop/Coding/Python/dorktuah/dorktuah/modules/proxy/proxies.txt",
+        "proxy_path": "C:/Users/cantc/Desktop/Coding/Python/dorktuah/dorktuah/proxy/proxies.txt",
         "source_limit": 10
     }
     
@@ -130,7 +147,7 @@ if __name__ == "__main__":
     
     while True:
         show_menu()
-        option = int(Prompt.ask("[blue]Enter number[/blue]"))
+        option = int(Prompt.ask("[blue]Enter number[/blue]", choices=['0', '1', '2'], show_choices=True))
         if option == 0:
             show_query()
         elif option == 1:

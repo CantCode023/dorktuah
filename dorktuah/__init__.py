@@ -1,1 +1,1 @@
-from .dork import dork
+from .dork import Dorktuah

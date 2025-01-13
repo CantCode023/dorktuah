@@ -175,7 +175,16 @@ Remember to use this tool responsibly and in accordance with the target website'
   - Engine()
     - proxy_pool implementation
 - [x] write etools scraping implementaiton
-  - [ ] do pagination to retrieve **every** results
+  - [x] do pagination to retrieve **every** results
+    - load_more_results, pagination, get_source, search
+    - combine those 4
+    - 1. search, open ectools and search for the query
+    - WE ALSO WANT TO GIVE THE USER THE ABILITY TO GET NEXT RESULT
+    - def has_more_results()
+    - if has_more_results then show "click enter to go next" in cli
+    - if doesn't then don't show it.
+    - if click enter then load_more_results()
+    - get source and return
 - [x] implement proxy pool in engine.py
 - [x] make it into a cli using colorama and rich _maybe_?
   - [x] make header "dorktuah"
