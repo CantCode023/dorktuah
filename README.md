@@ -2,7 +2,7 @@
 
 # About
 
-Dorktuah is a powerful Python library designed for advanced Google dorking and web scraping through proxy rotation. It leverages multiple search engines while maintaining anonymity through an extensive proxy system. The project aims to provide researchers, security professionals, and developers with a reliable tool for gathering information while avoiding rate limiting and IP blocks.
+Dorktuah is a powerful Python tool designed for advanced Google dorking and web scraping through proxy rotation. It leverages multiple search engines while maintaining anonymity through an extensive proxy system. The project aims to provide researchers, security professionals, and developers with a reliable tool for gathering information while avoiding rate limiting and IP blocks.
 
 Key features:
 - Automated proxy rotation system
@@ -13,149 +13,39 @@ Key features:
 - Rate limit avoidance through proxy rotation
 - Custom proxy list support
 
-The name "Dorktuah" combines "dork" (referring to Google dorking) with "tuah" (meaning luck/fortune in Malay), signifying a fortunate/successful dorking tool (also referencing to hawktuah because this project is hawktuah).
-
----
-
-# Installation
-
-To install Dorktuah, follow these steps:
-
-Clone the repository:
-```bash
-git clone https://github.com/CantCode023/dorktuah.git
-```
-
-## Using dorktuah as a CLI
-
-1. Install required dependencies:
-```bash
-pip install -r dorktuah/requirements.txt
-```
-
-2. Run CLI and you're done!
-```bash
-python dorktuah
-```
-
-## Using dorktuah as a library
-
-1. Navigate to the project directory:
-```bash
-cd dorktuah
-```
-
-2. Install required dependencies:
-```bash
-pip install -r requirements.txt
-```
-
----
-
-> [!IMPORTANT]
-> From this point on, this documentation only shows the library version implementation. If you're looking for the CLI version, just check the installation section above.
-
----
-
-# Examples 
-
-Here are several examples demonstrating how to use Dorktuah:
-
-### Basic Search
-```python
-import dorktuah
-
-# Simple search query
-results = dorktuah.dork('site:"example.com" filetype:pdf')
-print(results)
-```
-
-### Using Specific Proxy Type
-```python
-import dorktuah
-
-# Search using only SOCKS5 proxies
-results = dorktuah.dork(
-    'site:"github.com" "password"',
-    proxy_type="socks5",
-    use_proxy=True
-)
-print(results)
-```
-
-### Using Custom Proxy List
-```python
-import dorktuah
-
-# Use custom proxy list from specific path
-results = dorktuah.dork(
-    'intext:"confidential" site:"company.com"',
-    use_proxy=True,
-    use_custom=True,
-    proxy_path="path/to/proxies.txt"
-)
-print(results)
-```
-
-### Advanced Search with Limited Sources
-```python
-import dorktuah
-
-# Limit proxy sources and use HTTP proxies
-results = dorktuah.dork(
-    'intitle:"index of" intext:"parent directory"',
-    proxy_type="http",
-    use_proxy=True,
-    use_custom=False,
-    source_limit=5
-)
-print(results)
-```
-
-The results are returned in a structured format:
-```python
-[
-    {
-        "url": "https://example.com/page",
-        "title": "Page Title",
-        "description": "Page description from search results"
-    },
-    # ... more results
-]
-```
-
-### Best Practices
-
-1. Always start with a smaller `source_limit` when testing:
-```python
-results = dorktuah.dork(query, source_limit=5)
-```
-
-2. Use specific proxy types for better reliability:
-```python
-results = dorktuah.dork(query, proxy_type="socks5")
-```
-
-3. Implement error handling:
-```python
-try:
-    results = dorktuah.dork(query)
-except Exception as e:
-    print(f"Error occurred: {e}")
-```
-
-4. Consider using custom proxy lists for consistent performance:
-```python
-results = dorktuah.dork(query, use_custom=True, proxy_path="reliable_proxies.txt")
-```
-
 The library automatically handles:
 - Proxy rotation
 - Health checks
 - Rate limiting avoidance
 - Result parsing and formatting
 
-Remember to use this tool responsibly and in accordance with the target website's terms of service and applicable laws.
+The name "Dorktuah" combines "dork" (referring to Google dorking) with "tuah" (meaning luck/fortune in Malay), signifying a fortunate/successful dorking tool (also referencing to hawktuah because this project is hawktuah).
+
+> [!IMPORTANT]
+> Remember to use this tool responsibly and in accordance with the target website's terms of service and applicable laws.
+
+---
+
+# Installation
+
+To use Dorktuah, follow these steps:
+
+1. Clone the repository:
+```bash
+git clone https://github.com/CantCode023/dorktuah.git
+```
+
+2. Install required dependencies:
+```bash
+pip install -r dorktuah/requirements.txt
+```
+
+3. Run CLI and you're done!
+```bash
+python dorktuah
+```
+
+![Header](./assets/menu.png)
 
 ---
 
