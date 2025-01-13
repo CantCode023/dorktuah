@@ -13,12 +13,6 @@ Key features:
 - Rate limit avoidance through proxy rotation
 - Custom proxy list support
 
-The library automatically handles:
-- Proxy rotation
-- Health checks
-- Rate limiting avoidance
-- Result parsing and formatting
-
 The name "Dorktuah" combines "dork" (referring to Google dorking) with "tuah" (meaning luck/fortune in Malay), signifying a fortunate/successful dorking tool (also referencing to hawktuah because this project is hawktuah).
 
 > [!IMPORTANT]
