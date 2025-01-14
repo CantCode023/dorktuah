@@ -1,160 +1,217 @@
-import os, textwrap, json, time
-from dorktuah import Dorktuah
-from seleniumbase import colorama
-from rich.prompt import Prompt, IntPrompt, Confirm
-from rich import print as rprint
-from rich.pretty import pprint
-from colorama import Fore, Style, init
-init(convert=True)
+import os, textwrap, json
+from typing import Dict, Optional, List
+from pathlib import Path
+from dataclasses import dataclass
+from rich.console import Console
+from rich.prompt import Prompt, Confirm
+from rich.theme import Theme
+from rich.panel import Panel
+from dorktuah import Dorktuah, SearchResult
 
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
+@dataclass
+class Config:
+    enabled: bool = False
+    use_custom: bool = False
+    proxy_type: str = "all"
+    proxy_path: str = str(Path(__file__).parent / "dorktuah/proxy/proxies.txt")
+    source_limit: int = 10
+    
+    @classmethod
+    def load(cls, path: str) -> 'Config':
+        """Load config from JSON file"""
+        try:
+            with open(path) as f:
+                data = json.load(f)
+            return cls(**data)
+        except Exception as e:
+            console.print(f"[red]Error loading config: {e}[/red]")
+            return cls()
+            
+    def save(self, path: str) -> bool:
+        """Save config to JSON file"""
+        try:
+            with open(path, 'w') as f:
+                json.dump(self.__dict__, f, indent=4)
+            return True
+        except Exception as e:
+            console.print(f"[red]Error saving config: {e}[/red]")
+            return False
 
-def show_menu(options:str="\n[0] Query\n[1] Proxy Settings\n[2] Exit"):
-    clear()
-    title = """
-    ██████╗  █████╗ ██████╗ ██╗  ██╗████████╗██╗   ██╗ █████╗ ██╗  ██╗
-    ██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝╚══██╔══╝██║   ██║██╔══██╗██║  ██║
-    ██║  ██║██║  ██║██████╔╝█████═╝    ██║   ██║   ██║███████║███████║
-    ██║  ██║██║  ██║██╔══██╗██╔═██╗    ██║   ██║   ██║██╔══██║██╔══██║
-    ██████╔╝╚█████╔╝██║  ██║██║ ╚██╗   ██║   ╚██████╔╝██║  ██║██║  ██║
-    ╚═════╝  ╚════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+class DorktuahCLI:
+    """Command line interface for Dorktuah"""
+    
+    TITLE = """
+██████╗  █████╗ ██████╗ ██╗  ██╗████████╗██╗   ██╗ █████╗ ██╗  ██╗
+██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝╚══██╔══╝██║   ██║██╔══██╗██║  ██║
+██║  ██║██║  ██║██████╔╝█████═╝    ██║   ██║   ██║███████║███████║
+██║  ██║██║  ██║██╔══██╗██╔═██╗    ██║   ██║   ██║██╔══██║██╔══██║
+██████╔╝╚█████╔╝██║  ██║██║ ╚██╗   ██║   ╚██████╔╝██║  ██║██║  ██║
+╚═════╝  ╚════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
     """
     
-    rprint(f"[bright_white][b]{title}[/b][/bright_white]")
-    rprint(f"[white][i]Dork across search engines.[/i][/white]")
-    
-    rprint(f"\n[bright_white]--------------------------------------------[/bright_white]")
-    rprint("[white]Author: CantCode023[/white]")
-    rprint("[white]Github: github.com/CantCode023/dorktuah[/white]")
-    rprint("[white]Discord: bd8344[/white]")
-    if options != "":
-        rprint(options)
-    rprint(f"[bright_white]--------------------------------------------[/bright_white]\n")
-
-def load_config():
-    with open("./dorktuah/config.json", "r") as f:
-        config = json.load(f) 
-    return config
-
-def print_results(results):
-    for i, result in enumerate(results):
-        title = result["title"].strip()
-        description = result["description"].strip()
-        url = result["url"].strip()
-    
-        wrapped_title = textwrap.fill(title, width=80, subsequent_indent="\t    ")
-        wrapped_description = textwrap.fill(description, width=80, subsequent_indent="\t    ")
-    
-        print(Style.BRIGHT + Fore.WHITE + f"{i+1}. ——— Title: " + Fore.MAGENTA + wrapped_title)
-        print("\t" + Style.BRIGHT + Fore.WHITE + f"Description: {Fore.LIGHTGREEN_EX + wrapped_description}")
-        print("\t" + Style.BRIGHT + Fore.WHITE + f"Link: {Fore.LIGHTBLUE_EX + url}")
-        print("\n")
-
-def show_query():
-    show_menu("")
-    query = Prompt.ask("[blue]Query[/blue]", default="Type /back to go back")
-    if query.lower() == "/back":
-        return
-    
-    config = load_config()
-    
-    dorktuah = Dorktuah(
-        proxy_type=config["proxy_type"],
-        use_proxy=config["enabled"],
-        use_custom=config["use_custom"],
-        proxy_path=config["proxy_path"],
-        source_limit=config["source_limit"]
-    )
-    
-    results = dorktuah.search(query)
-    print_results(results)
+    def __init__(self):
+        self.config_path = Path(__file__).parent / "dorktuah/config.json"
+        self.config = self._init_config()
+        self.dorktuah: Optional[Dorktuah] = None
         
-    while True:
-        has_next_page = dorktuah.has_next_page()
-        if has_next_page:
-            print(Style.DIM + Fore.LIGHTBLUE_EX + "Press enter to go next...")
-        print(Style.DIM + Fore.LIGHTRED_EX + "Type q and press enter to go back...")
-        inp = input()
-        if inp.lower() == "q":
-            dorktuah.close()
+    def _init_config(self) -> Config:
+        """Initialize configuration"""
+        if not self.config_path.exists():
+            console.print("[yellow]Config file not found! Creating default...[/yellow]")
+            config = Config()
+            config.save(self.config_path)
+            return config
+        return Config.load(self.config_path)
+        
+    @staticmethod
+    def clear_screen():
+        """Clear terminal screen"""
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
+    def show_header(self, options: str = ""):
+        """Display application header"""
+        self.clear_screen()
+        console.print(Panel.fit(
+            f"[bright_white]{self.TITLE}[/bright_white]\n"
+            "[italic]Dork across search engines.[/italic]\n\n"
+            "[white]Author: CantCode023[/white]\n"
+            "[white]Github: github.com/CantCode023/dorktuah[/white]\n"
+            "[white]Discord: bd8344[/white]" +
+            (f"\n{options}" if options else ""),
+        ))
+        
+    def print_results(self, results: List[SearchResult]):
+        """Display search results"""
+        for i, result in enumerate(results, 1):
+            title = textwrap.fill(
+                result.title,
+                width=80,
+                subsequent_indent="\t    "
+            )
+            description = textwrap.fill(
+                result.description,
+                width=80,
+                subsequent_indent="\t    "
+            )
+            
+            console.print(f"[bold white]{i}. ——— Title:[/bold white] [magenta]{title}[/magenta]")
+            console.print(f"\t[bold white]Description:[/bold white] [green]{description}[/green]")
+            console.print(f"\t[bold white]Link:[/bold white] [blue]{result.url}[/blue]\n")
+            
+    def handle_search(self):
+        """Handle search functionality"""
+        self.show_header()
+        query = Prompt.ask("[blue]Query[/blue]", default="Type /back to go back")
+        if query.lower() == "/back":
             return
-        show_menu("")
-        results = dorktuah.get_next_page()
-        print_results(results)
+            
+        self.dorktuah = Dorktuah(
+            proxy_type=self.config.proxy_type,
+            use_proxy=self.config.enabled,
+            use_custom=self.config.use_custom,
+            proxy_path=self.config.proxy_path,
+            source_limit=self.config.source_limit
+        )
         
-def show_proxy():
-    config = load_config()
-        
-    while True:
-        show_menu("\n[0] Enable proxy\n[1] Use custom proxy\n[2] Proxy type\n[3] Proxy path\n[4] Scraping source limit\n[5] Save\n[6] Show config\n[7] Back\n[8] Exit")
-    
-        option = int(Prompt.ask("[blue]Enter number[/blue]"))
-        if option == 0:
-            enable = Confirm.ask("[blue]Enable proxy[/blue]")
-            config["enabled"] = enable
-        elif option == 1:
-            use_custom = Confirm.ask("[blue]Use custom proxy[/blue]")
-            config["use_custom"] = use_custom
-        elif option == 2:
-            proxy_type = Prompt.ask("[blue]Proxy type[/blue]", choices=["socks4", "socks5", "http", "all"])
-            config["proxy_type"] = proxy_type.lower()
-        elif option == 3:
-            proxy_path = Prompt.ask("[blue]Proxy path (absolute, path to your proxy list e.g C:/.../proxy.txt)[/blue]")
-            if not os.path.exists(proxy_path):
-                rprint("[red]File doesn't exist![/red]")
-                rprint("[blue]Press enter to continue...[/blue]")
-                input()
-                continue 
-            config["proxy_path"] = proxy_path
-        elif option == 4:
-            int_choices = [str(i) for i in range(1,101)]
-            source_limt = int(Prompt.ask("[blue]Scraping source limit[/blue]", default="[1-100]"))
-            config["source_limit"] = source_limt
-        elif option == 5:
-            try:
-                with open("./dorktuah/config.json", "w") as f:
-                    json.dump(config, f, indent=4)
-                rprint("[green]Config saved successfully![/green]")
-            except Exception as e:
-                rprint(f"[red]Error while saving config: {str(e)}[/red]")
-            rprint("[blue]Press enter to continue...[/blue]")
-            input()
-        elif option == 6:
-            pprint(config)
-            rprint("[blue]Press enter to continue...[/blue]")
-            input()
-        elif option == 7:
-            return False
-        elif option == 8:
-            return True
-    
-if __name__ == "__main__":
-    config = {
-        "enabled": False,
-        "use_custom": False,
-        "proxy_type": "all",
-        "proxy_path": "C:/Users/cantc/Desktop/Coding/Python/dorktuah/dorktuah/proxy/proxies.txt",
-        "source_limit": 10
-    }
-    
-    if not os.path.exists("./dorktuah/config.json"):
-        rprint("[red]Config file not found! Creating one.[/red]")
-        with open("./dorktuah/config.json", "w") as f:
-            json.dump(config, f, indent=4) 
-        rprint("[green]Successfully created config file. Click enter to continue[/green]")
+        try:
+            results = self.dorktuah.search(query)
+            self.print_results(results)
+            
+            while True:
+                if self.dorktuah.has_next_page():
+                    console.print("[blue]Press enter to go next...[/blue]")
+                console.print("[red]Type q and press enter to go back...[/red]")
+                
+                if (inp := input().lower()) == "q":
+                    break
+                    
+                self.show_header()
+                results = self.dorktuah.get_next_page()
+                self.print_results(results)
+                
+        finally:
+            if self.dorktuah:
+                self.dorktuah.close()
+                
+    def handle_proxy_settings(self) -> bool:
+        """Handle proxy configuration"""
+        while True:
+            self.show_header(
+                "\n[0] Enable proxy\n[1] Use custom proxy\n"
+                "[2] Proxy type\n[3] Proxy path\n[4] Scraping source limit\n"
+                "[5] Save\n[6] Show config\n[7] Back\n[8] Exit"
+            )
+            
+            option = Prompt.ask("[blue]Enter number[/blue]", choices=[str(i) for i in range(9)])
+            
+            if option == "0":
+                self.config.enabled = Confirm.ask("[blue]Enable proxy[/blue]")
+            elif option == "1":
+                self.config.use_custom = Confirm.ask("[blue]Use custom proxy[/blue]")
+            elif option == "2":
+                self.config.proxy_type = Prompt.ask(
+                    "[blue]Proxy type[/blue]",
+                    choices=["socks4", "socks5", "http", "all"]
+                ).lower()
+            elif option == "3":
+                proxy_path = Prompt.ask(
+                    "[blue]Proxy path (absolute path to proxy list)[/blue]"
+                )
+                if not Path(proxy_path).exists():
+                    console.print("[red]File doesn't exist![/red]")
+                    self.wait_for_input()
+                    continue
+                self.config.proxy_path = proxy_path
+            elif option == "4":
+                self.config.source_limit = int(Prompt.ask(
+                    "[blue]Scraping source limit[/blue]",
+                    default="10"
+                ))
+            elif option == "5":
+                if self.config.save(self.config_path):
+                    console.print("[green]Config saved successfully![/green]")
+                self.wait_for_input()
+            elif option == "6":
+                console.print_json(data=self.config.__dict__)
+                self.wait_for_input()
+            elif option == "7":
+                return False
+            elif option == "8":
+                return True
+                
+    @staticmethod
+    def wait_for_input():
+        """Wait for user input"""
+        console.print("[blue]Press enter to continue...[/blue]")
         input()
-    
-    while True:
-        show_menu()
-        option = int(Prompt.ask("[blue]Enter number[/blue]", choices=['0', '1', '2'], show_choices=True))
-        if option == 0:
-            show_query()
-        elif option == 1:
-            is_break = show_proxy()
-            if is_break:
-                rprint("[blue]Goodbye![/blue]")
+        
+    def run(self):
+        """Main application loop"""
+        while True:
+            self.show_header("\n[0] Query\n[1] Proxy Settings\n[2] Exit")
+            option = Prompt.ask(
+                "[blue]Enter number[/blue]",
+                choices=['0', '1', '2'],
+                show_choices=True
+            )
+            
+            if option == "0":
+                self.handle_search()
+            elif option == "1":
+                if self.handle_proxy_settings():
+                    break
+            else:
                 break
-        elif option == 2:
-            rprint("[blue]Goodbye![/blue]")
-            break
+                
+        console.print("[blue]Goodbye![/blue]")
+
+# Initialize rich console with custom theme
+console = Console(theme=Theme({
+    "info": "dim cyan",
+    "warning": "yellow",
+    "error": "bold red"
+}))
+
+if __name__ == "__main__":
+    cli = DorktuahCLI()
+    cli.run()

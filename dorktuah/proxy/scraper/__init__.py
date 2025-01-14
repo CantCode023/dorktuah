@@ -1,1 +1,1 @@
-from .main import scrape_proxies
+from .main import AsyncProxyScraper, scrape_proxies

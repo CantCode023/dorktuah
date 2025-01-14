@@ -1,174 +1,170 @@
-# from typing import Literal, Optional
-# from seleniumbase import Driver
-# from selenium.common.exceptions import JavascriptException
-# from bs4 import BeautifulSoup
-# from .proxy import ProxyPool
-# from urllib.parse import unquote
-
-# class Dorktuah:
-#     def __init__(
-#         self,
-#         proxy_type:Literal["socks4", "socks5", "http", "all"] = "all",
-#         use_proxy:bool=True,
-#         use_custom:bool=True,
-#         source_limit:int=10,
-#         proxy_path:str="C:/Users/cantc/Desktop/Coding/Python/dorktuah/dorktuah/proxy/proxies.txt"
-#     ):
-#         self.proxy_type = proxy_type
-#         self.use_proxy = use_proxy
-#         self.use_custom = use_custom
-#         self.source_limit = source_limit
-#         self.proxy_path = proxy_path
-#         self.running = True
-#         self.result = {}
-    
-    # def get_source(self, self.driver):
-    #     container = self.driver.find_element("body > form > table > tbody > tr:nth-child(3) > td:nth-child(2) > table > tbody")
-    #     return container if container else self.driver.get_page_source()
-        
-#     def load_more_results(self, self.driver):
-#         selector = """body > form > table > tbody > tr:nth-child(3) > td:nth-child(2) > p.resultStatus > a"""
-#         a_tag = self.driver.find_element(selector)
-#         while a_tag and "more" in a_tag.text.lower():
-#             a_tag.click()
-#             self.driver.sleep(1)
-#             a_tag = self.driver.find_element(selector)
-#             if a_tag: continue
-#             else: break
-            
-#     def pagination(self, self.driver):
-#         have_pages = self.driver.find_element("p.pageNav")
-#         sources = []
-#         if have_pages:
-#             while True:
-#                 have_next = self.driver.find_element("body > form > table > tbody > tr:nth-child(3) > td:nth-child(2) > p.pageNav > a:nth-child(9)")
-#                 if have_next:
-#                     have_next.click()
-#                     self.driver.sleep(1)
-#                     sources.append(self.__get_source(self.driver)) 
-#                 else: break
-            
-#             return sources
-#         return [self.__get_source(self.driver)]
-        
-#     def open(self, query):
-#         sources = []
-#         proxy = None
-
-#         if self.use_proxy:
-#             proxy = ProxyPool(type=self.proxy_type, use_custom=self.use_custom, proxy_path=self.proxy_path, source_limit=self.source_limit)
-
-#         self.driver = Driver(uc=True, headless2=True, proxy=proxy)
-#         try:
-#             self.driver.open("https://www.etools.ch/search.do")
-#             self.driver.type("input[type='search']", query)
-#             self.driver.click("input[type='submit']")
-#             self.driver.sleep(1)
-#             self.driver.execute_script("document.querySelector('.cmpwrapper').shadowRoot.getElementById('cmpbntyestxt').click()") 
-#             self.driver.sleep(1)
-#             self.driver.click("input[type='submit']")
-#             self.__get_more_results(self.driver)
-#             sources = self.__pagination(self.driver)
-#         except JavascriptException:
-#             print("[!] Proxy unreliable, please ensure your proxies are working and stable. If you think this is wrong, try again.")
-            
-#         return sources
-    
-
-from typing import Literal
-from .proxy import ProxyPool
+from typing import Literal, Optional, List, Dict
+from .proxy import ProxyManager
 from seleniumbase import Driver
-from selenium.common.exceptions import JavascriptException
+from selenium.common.exceptions import JavascriptException, WebDriverException
 from bs4 import BeautifulSoup
 from urllib.parse import unquote
- 
-class Dorktuah:
-    def __init__(self,
-        proxy_type:Literal["socks4", "socks5", "http", "all"] = "all",
-        use_proxy:bool=True,
-        use_custom:bool=True,
-        source_limit:int=10,
-        proxy_path:str="C:/Users/cantc/Desktop/Coding/Python/dorktuah/dorktuah/proxy/proxies.txt"
-    ):
-        self.proxy_type = proxy_type
-        self.use_proxy = use_proxy
-        self.use_custom = use_custom
-        self.source_limit = source_limit
-        self.proxy_path = proxy_path
-        
-        self.driver:Driver=None
-        
-    def open(self):
-        proxy = ""
-        if self.use_proxy:
-            proxy = ProxyPool(type=self.proxy_type, use_custom=self.use_custom, proxy_path=self.proxy_path, source_limit=self.source_limit)
-        
-        driver:Driver = Driver(uc=True, headless2=True, proxy=proxy)
+from dataclasses import dataclass
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+@dataclass
+class SearchResult:
+    """Data class to represent search results"""
+    url: str
+    title: str  
+    description: str
+
+class SearchEngine:
+    """Base class for search engine implementations"""
+    def __init__(self, driver: Driver):
         self.driver = driver
+    
+    def search(self, query: str) -> List[SearchResult]:
+        raise NotImplementedError
         
-    def close(self):
-        self.driver.quit()
-        if self.driver: self.driver = None
+    def get_next_page(self) -> List[SearchResult]:
+        raise NotImplementedError
         
-    def get_results(self, source):
+    def has_next_page(self) -> bool:
+        raise NotImplementedError
+
+class EtoolsEngine(SearchEngine):
+    """ETools search engine implementation"""
+    
+    BASE_URL = "https://www.etools.ch/search.do"
+    
+    def __init__(self, driver: Driver):
+        super().__init__(driver)
+        
+    def _parse_results(self, html: str) -> List[SearchResult]:
+        """Parse HTML and extract search results"""
         results = []
-        soup = BeautifulSoup(source, 'html.parser')
-        rows = soup.find_all('tr')
-        for row in rows:
+        soup = BeautifulSoup(html, 'html.parser')
+        for row in soup.find_all('tr'):
             record = row.find('td', {'class': 'record'})
-            if record:
-                title = record.find('a', {'class': 'title'})
-                description = record.find('div', {'class': 'text'})
-                if title and description:
-                    url = title.get("href")
-                    url = unquote(url.replace("redirect.do?a=","")) if url.startswith("redirect.do?a=") else url
-                    result = {
-                        "url": url,
-                        "title": title.text,
-                        "description": description.text
-                    }
-                    results.append(result)
-        return results
-        
-    def load_more_results(self):
-        selector = "form table tr:nth-child(3) td:nth-child(2) p.resultStatus a"
-        a_tag = self.driver.find_element(selector)
-        while a_tag and "more" in a_tag.text.lower():
-            a_tag.click()
-            self.driver.sleep(1)
-            a_tag = self.driver.find_element(selector)
-            if a_tag: continue
-            else: break
+            if not record:
+                continue
+                
+            title = record.find('a', {'class': 'title'})
+            description = record.find('div', {'class': 'text'})
+            if not (title and description):
+                continue
+                
+            url = title.get("href", "")
+            if url.startswith("redirect.do?a="):
+                url = unquote(url.replace("redirect.do?a=",""))
+                
+            results.append(SearchResult(
+                url=url.strip(),
+                title=title.text.strip(),
+                description=description.text.strip()
+            ))
             
-    def has_next_page(self):
-        try: 
-            has_page = self.driver.find_element("p.pageNav")
-            if has_page:
-                has_next = self.driver.find_element("p.pageNav a:last-child") 
-                if has_next: return has_next
-        except:
-            return None
-        
-    def get_next_page(self):
-        has_next_page = self.has_next_page()
-        if has_next_page:
-            has_next_page.click()
-            self.driver.sleep(1)
-            return self.get_results(self.driver.get_page_source())
-       
-    def search(self, query):
-        if self.driver == None:
-            self.open()
+        return results
+
+    def _load_more_results(self):
+        """Load additional results via pagination"""
+        selector = "form table tr:nth-child(3) td:nth-child(2) p.resultStatus a"
+        while True:
+            try:
+                a_tag = self.driver.find_element(selector)
+                if not (a_tag and "more" in a_tag.text.lower()):
+                    break
+                a_tag.click()
+                self.driver.sleep(1)
+            except WebDriverException:
+                break
+
+    def search(self, query: str) -> List[SearchResult]:
+        """Perform search and return results"""
         try:
-            self.driver.uc_open("https://www.etools.ch/search.do")
+            self.driver.uc_open(self.BASE_URL)
             self.driver.type("input[type='search']", query)
             self.driver.click("input[type='submit']")
             self.driver.sleep(1)
-            self.driver.execute_script("document.querySelector('.cmpwrapper').shadowRoot.getElementById('cmpbntyestxt').click()") 
+            
+            # Accept cookies
+            self.driver.execute_script(
+                "document.querySelector('.cmpwrapper').shadowRoot.getElementById('cmpbntyestxt').click()"
+            )
             self.driver.sleep(2)
+            
             self.driver.click("input[type='submit']")
-            self.load_more_results()
-            source = self.driver.get_page_source()
-            return self.get_results(source)
+            self._load_more_results()
+            
+            return self._parse_results(self.driver.get_page_source())
+            
         except JavascriptException:
-            print("[!] Proxy unreliable, please ensure your proxies are working and stable. If you think this is wrong, try again.")
+            logger.error("Proxy connection failed")
+            raise RuntimeError("Proxy unreliable - please ensure proxies are working")
+        except WebDriverException as e:
+            logger.error(f"Search failed: {str(e)}")
+            raise
+
+    def has_next_page(self) -> bool:
+        """Check if next page exists"""
+        try:
+            nav = self.driver.find_element("p.pageNav")
+            next_link = self.driver.find_element("p.pageNav a:last-child")
+            return bool(nav and next_link)
+        except WebDriverException:
+            return False
+
+    def get_next_page(self) -> List[SearchResult]:
+        """Get results from next page"""
+        if not self.has_next_page():
+            return []
+            
+        self.driver.find_element("p.pageNav a:last-child").click()
+        self.driver.sleep(1)
+        return self._parse_results(self.driver.get_page_source())
+
+class Dorktuah:
+    """Main search interface"""
+    
+    def __init__(
+        self,
+        proxy_type: Literal["socks4", "socks5", "http", "all"] = "all",
+        use_proxy: bool = True,
+        use_custom: bool = True,
+        source_limit: int = 10,
+        proxy_path: str = None
+    ):
+        self.proxy_manager = ProxyManager(
+            proxy_type=proxy_type,
+            use_proxy=use_proxy, 
+            use_custom=use_custom,
+            source_limit=source_limit,
+            proxy_path=proxy_path
+        )
+        self.driver: Optional[Driver] = None
+        self.engine: Optional[SearchEngine] = None
+        
+    def _initialize(self):
+        """Initialize driver and search engine"""
+        if not self.driver:
+            proxy = self.proxy_manager.get_proxy() if self.proxy_manager.use_proxy else None
+            self.driver = Driver(uc=True, headless2=True, proxy=proxy)
+            self.engine = EtoolsEngine(self.driver)
+            
+    def close(self):
+        """Clean up resources"""
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+            self.engine = None
+            
+    def search(self, query: str) -> List[SearchResult]:
+        """Perform search"""
+        self._initialize()
+        return self.engine.search(query)
+        
+    def has_next_page(self) -> bool:
+        """Check for next page"""
+        return bool(self.engine and self.engine.has_next_page())
+        
+    def get_next_page(self) -> List[SearchResult]:
+        """Get next page results"""
+        return self.engine.get_next_page() if self.engine else []
