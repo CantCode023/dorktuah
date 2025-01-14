@@ -92,3 +92,12 @@ python dorktuah
 - [x] make proxy checker faster
   - [x] make proxy checking using asynchronous functions
 - [x] refactor to follow the SOLID principle
+- [ ] fix error 
+  Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+  handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+  Traceback (most recent call last):
+    File "C:\Users\cantc\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "C:\Users\cantc\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+      self._sock.shutdown(socket.SHUT_RDWR)
+  ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
