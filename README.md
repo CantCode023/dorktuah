@@ -53,7 +53,7 @@ python dorktuah
     - type:Literal["socks4", "socks5", "http", "all"] = "all"
     - get proxies from proxies.txt
   - [x] write a proxy checker to make sure the returned proxy is alive
-  - [ ] convert proxypool to class to allow argument inheritance for easier argument initalization across methods
+  - [x] convert proxypool to class to allow argument inheritance for easier argument initalization across methods
 - [x] write engine implementation
   - use BeautifulSoup
   - Engine()
@@ -89,4 +89,6 @@ python dorktuah
 # FUTURE TODOLIST:
 
 - [x] add scrape proxies and check proxies to ProxyPool to get newest proxies
-- [ ] make proxy checker faster
+- [x] make proxy checker faster
+  - [x] make proxy checking using asynchronous functions
+- [x] refactor to follow the SOLID principle
