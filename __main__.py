@@ -54,7 +54,7 @@ def print_results(results):
 def show_query():
     show_menu("")
     query = Prompt.ask("[blue]Query[/blue]", default="Type /back to go back")
-    if query == "/back":
+    if query.lower() == "/back":
         return
     
     config = load_config()
