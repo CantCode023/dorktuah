@@ -123,3 +123,8 @@ sources = [
     "https://raw.githubusercontent.com/ZoniBoy00/proxy-lists/refs/heads/master/socks5_proxies.txt",
     "https://www.proxy-list.download/api/v1/get?type=socks5",
 ]
+
+[all]
+sources = [
+    "https://rcloak.com/api/proxies/raw?protocol=all",
+]
